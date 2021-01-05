@@ -1,13 +1,15 @@
   version: '3.7'
-
   services:
     kibana:
       image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION:-7.10.1}
       container_name: kibana
       ports:
         - "5601:5601"
+      environment:
+        ELASTICSEARCH_URL: http://es01:9200
+        ELASTICSEARCH_HOSTS: http://es01:9200
       networks:
-        - elastic
+        - elasticsearch
     es01:
       image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
       container_name: es01
@@ -27,7 +29,7 @@
       ports:
         - ${ELASTIC_PORT:-9200}:${ELASTIC_PORT:-9200}
       networks:
-        - elastic
+        - elasticsearch
     es02:
       image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
       container_name: es02
@@ -47,7 +49,7 @@
       ports:
         - 9201:9201
       networks:
-        - elastic
+        - elasticsearch
     es03:
       image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
       container_name: es03
@@ -67,7 +69,7 @@
       ports:
         - 9202:9202
       networks:
-        - elastic
+        - elasticsearch
 
   volumes:
     node01:
@@ -78,5 +80,5 @@
       driver: local
 
   networks:
-    elastic:
+    elasticsearch:
       driver: bridge
