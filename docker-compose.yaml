@@ -1,0 +1,82 @@
+  version: '3.7'
+
+  services:
+    kibana:
+      image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION:-7.10.1}
+      container_name: kibana
+      ports:
+        - "5601:5601"
+      networks:
+        - elastic
+    es01:
+      image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
+      container_name: es01
+      environment:
+        - node.name=es01
+        - cluster.name=es-docker-cluster
+        - discovery.seed_hosts=es02,es03
+        - cluster.initial_master_nodes=es01,es02,es03
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - ./data/node01:/usr/share/elasticsearch/data
+      ports:
+        - ${ELASTIC_PORT:-9200}:${ELASTIC_PORT:-9200}
+      networks:
+        - elastic
+    es02:
+      image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
+      container_name: es02
+      environment:
+        - node.name=es02
+        - cluster.name=es-docker-cluster
+        - discovery.seed_hosts=es01,es03
+        - cluster.initial_master_nodes=es01,es02,es03
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - ./data/node02:/usr/share/elasticsearch/data
+      ports:
+        - 9201:9201
+      networks:
+        - elastic
+    es03:
+      image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.10.1}
+      container_name: es03
+      environment:
+        - node.name=es03
+        - cluster.name=es-docker-cluster
+        - discovery.seed_hosts=es01,es02
+        - cluster.initial_master_nodes=es01,es02,es03
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - ./data/node03:/usr/share/elasticsearch/data
+      ports:
+        - 9202:9202
+      networks:
+        - elastic
+
+  volumes:
+    node01:
+      driver: local
+    node02:
+      driver: local
+    node03:
+      driver: local
+
+  networks:
+    elastic:
+      driver: bridge
